@@ -1,0 +1,11 @@
+[files]
+pwnagotchi = []
+system = []
+
+[commands]
+install = []
+uninstall = []
+
+[info]
+version = ''
+subprocess = 'ttyd'
