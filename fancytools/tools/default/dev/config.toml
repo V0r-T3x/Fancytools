@@ -1,3 +1,10 @@
+[info]
+name = 'dev'
+description = ''
+version = ''
+online_path = ''
+subprocess = ''
+
 [files]
 pwnagotchi = []
 system = []
@@ -5,7 +12,3 @@ system = []
 [commands]
 install = []
 uninstall = []
-
-[info]
-version = ''
-subprocess = ''

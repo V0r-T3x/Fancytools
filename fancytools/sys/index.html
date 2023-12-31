@@ -107,9 +107,9 @@
             <h1>Fancygotchi tools:</h1>
             <div id="divTop" data-role="navbar" data-iconpos="left">
                 <ul>
-                    <li class="navitem"><button id="btnInstall" type="button" onclick="install()">Install fancygotchi</button></li>
+                    <li class="navitem"><button id="btnInstall" type="button" onclick="install('fancygotchi')">Install fancygotchi</button></li>
                     <li class="navitem"><button id="btnUninstall" type="button" onclick="uninstall()">Uninstall fancygotchi</button></li>
-                    <li class="navitem"><button id="btnUpdate" type="button" onclick="check_update()">Check fancygotchi update</button></li>
+                    <li class="navitem"><button id="btnUpdate" type="button" onclick="check_update('fancygotchi')">Check fancygotchi update</button></li>
                     <li class="navitem"><input type="checkbox" id="upd_on" /><label for="upd_on"  id="upd">Online update</label></li>
                 </ul>
             </div></br>
@@ -159,27 +159,32 @@
             if (websshIframe) {
                 // Set the src attribute of the iframe using location.hostname and port 7681
                 websshIframe.src = "http://" + location.hostname + ":7681";
-                alert("http://" + location.hostname + ":7681")
+                //alert("http://" + location.hostname + ":7681")
             } else {
                 console.error("Iframe with id 'webssh' not found.");
             }
         });
-        function saveConfig(){
-            // get table
-            var table = document.getElementById("tableOptions");
-            if (table) {
-                var json = tableToJson(table);
-                sendJSON("fancytools/save-config", json, function(response) {
+
+        function install(name){
+            alert(name);
+            if (confirm("Do you want install Fancygotchi?")){
+                var json = {"name": name};
+                sendJSON("fancytools/install", json, function(response) {
                     if (response) {
                         if (response.status == "200") {
-                            alert("Config got updated");
+                            alert("fancygotchi is installed");
+                            window.location.href = '/';
                         } else {
-                            alert("Error while updating the config (err-code: " + response.status + ")");
+                            alert("Error while installing fancygotchi (err-code: " + response.status + ")");
                         }
                     }
                 });
+            } else {
+                alert("installation was canceled");
             }
+
         }
+
         function uninstall(){
             if (confirm("Do you want uninstall Fancygotchi?")){
                 var json = {"response":"1"};
@@ -197,26 +202,19 @@
                 alert("uninstall was canceled");
             }
         }
-        function check_update(){
+        function check_update(name){
             var online = document.getElementById("upd_on").checked;
-            if (online == true){
-                var ck_upd = "fancytools/check_online_update";
-                var upd = "fancytools/online_update";}
-            else {
-                var ck_upd = "fancytools/check_local_update";
-                var upd = "fancytools/local_update";}
-            //alert(ck_upd + " " + upd);
-   
+            alert(name);
             if (confirm("Do you want check for Fancygotchi update?")){
-                var json = {"response":"1"};
-                sendJSON(ck_upd, json, function(response){
+                var json = {"name": name, "online": online};
+                sendJSON("fancytools/check_update", json, function(response) {
                     if (response) {
                         if (response.status == "200") {
                             is_version = response.responseText.split(',')
                             if (is_version[0] == 'True') {
                                 alert('New fancygotchi update v.' + is_version[1]);
                                 if (confirm("Do you want update Fancygotchi to v." + is_version[1] + "?")){
-                                    var json = {"response":"1"};
+                                    var json = {"name": name, "online": online};
                                     sendJSON(upd, json, function(response){
                                         if (response) {
                                             if (response.status == "200"){
@@ -232,7 +230,7 @@
                                 }
                             } else if (is_version[0] == 'False') {
                                 alert('Fancygotchi is up-to-date v.' + is_version[1]);
-                            //window.location.href = '/';
+                            window.location.href = '/';
                             } else {
                                 alert("no local update folder is found");
                             }
@@ -242,6 +240,12 @@
                         }
                     }
                 });
+
+
+
+
+
+
             } else {
                 alert("checking update was canceled");
             }
@@ -287,29 +291,6 @@
                 });
             } else {
                 alert("dev backup was canceled");
-            }
-        }
-
-
-        var searchInput = document.getElementById("searchText");
-        searchInput.onkeyup = function() {
-            var filter, table, tr, td, i, txtValue;
-            filter = searchInput.value.toUpperCase();
-            table = document.getElementById("tableOptions");
-            if (table) {
-                tr = table.getElementsByTagName("tr");
-
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[1];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        }else{
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
             }
         }
 

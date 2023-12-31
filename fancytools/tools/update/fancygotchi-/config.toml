@@ -1,7 +1,6 @@
 [info]
 name = 'fancygotchi'
-__version__ = '2023.09.1'
-# File where the __version__ 
+__version__ = '2023.09.1' 
 online_path = 'https://raw.githubusercontent.com/V0r-T3x/pwnagotchi-fancygotchi/master/pwnagotchi/ui/fancygotchi.py'
 subprocess = ''
 
