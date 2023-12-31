@@ -6,17 +6,6 @@
 
 ## Installation
 
-To install Fancytools, follow these steps:
-
-1. Ensure that you have Pwnagotchi installed on your device.
-2. Clone this repository to your Pwnagotchi plugins directory:
-
-    ```bash
-    git clone https://github.com/your-username/fancytools.git /path/to/your/pwnagotchi/plugins/fancytools
-    ```
-
-3. Restart your Pwnagotchi device.
-
 ## Features
 
 ### Fancygotchi Integration
