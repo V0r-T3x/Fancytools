@@ -101,6 +101,24 @@ def copy_with_backup(src_path, dest_path):
     # Copy the source file to the destination
     shutil.copy(src_path, dest_path)
 
+def delete_restore(dest_path):
+    # Check if the destination file exists
+    if not os.path.exists(dest_path):
+        raise FileNotFoundError(f"The destination file '{dest_path}' does not exist.")
+
+    # Check if a backup file with .original extension exists
+    backup_path = dest_path + '.original'
+    
+    # If a backup file exists, copy it back to the destination
+    if os.path.exists(backup_path):
+        shutil.copy(backup_path, dest_path)
+        logging.warning(f"Restored '{dest_path}' from backup.")
+        
+        # Optionally, you can remove the backup file after restoring
+        os.remove(backup_path)
+        logging.warning(f"Removed backup file '{backup_path}'.")
+
+
 # function to backup all actual modified files to make a new install update
 def dev_backup(config, dest_fold):
     if not config.get('pwnagotchi') and not config.get('system'):
@@ -152,8 +170,39 @@ def install(config):
             os.system(cmd)
 
 
-def uninstall(soft=False):
+def uninstall(config):
+    if config['info']['default']: tooltype = 'default'
+    else: tooltype = 'custom'
+    name = config['info']['name']
+    if name == 'fancygotchi': 
+        logging.warning('rm %s/%s' % (ROOT_PATH, 'ui/web/static/img'))
+        os.system('rm %s/%s' % (ROOT_PATH, 'ui/web/static/img'))
+        logging.warning('load config: %s/%s' % (ROOT_PATH, 'ui/theme/config.toml'))
+        config = load_config('%s/%s' % (ROOT_PATH, 'ui/themes/config.toml'))
+
+    logging.info('[FANCYTOOLS] starting '+ config['info']['name'] +' install')
+
     logging.info('uninstall function start')
+    if not config['commands'].get('uninstall'):
+        logging.warning('no uninstall commands')
+    else:
+        for cmd in config['commands']['uninstall']:
+            logging.warning(cmd)
+            os.system(cmd)
+    if not config['files'].get('pwnagotchi') and not config['files'].get('system'):
+        logging.warning('No install files')
+    else:
+        if config['files'].get('pwnagotchi'):
+            for path in config['files']['pwnagotchi']:
+                sys_path = '%s/%s' % (ROOT_PATH, path)
+                logging.warning("delete: " + sys_path)
+                delete_restore(sys_path)
+
+        if config['files'].get('system'):
+            for path in config['files']['system']:
+                sys_path = path
+                logging.warning("Delete: " + sys_path)
+                delete_restore(sys_path)
 
 def check_update(vers, path, online):
     nofile = False
@@ -474,6 +523,22 @@ class Fancytools(plugins.Plugin):
                     logging.warning(name)
                     alltools = {**self.deftools, **self.custools}
                     install(alltools[name])
+                    _thread.start_new_thread(restart, (self.mode,))
+                    #logging.info(str(request.get_json()))
+                    return "success"
+                except Exception as ex:
+                    logging.error(ex)
+                    return "install error", 500
+
+            elif path == "uninstall":
+                try:
+                    jreq = request.get_json()
+                    data = json.loads(json.dumps(jreq))
+                    name = data["name"]
+                    logging.warning(name)
+                    alltools = {**self.deftools, **self.custools}
+                    logging.warning('before uninstall')
+                    uninstall(alltools[name])
                     _thread.start_new_thread(restart, (self.mode,))
                     #logging.info(str(request.get_json()))
                     return "success"

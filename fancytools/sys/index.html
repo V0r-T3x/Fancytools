@@ -108,7 +108,7 @@
             <div id="divTop" data-role="navbar" data-iconpos="left">
                 <ul>
                     <li class="navitem"><button id="btnInstall" type="button" onclick="install('fancygotchi')">Install fancygotchi</button></li>
-                    <li class="navitem"><button id="btnUninstall" type="button" onclick="uninstall()">Uninstall fancygotchi</button></li>
+                    <li class="navitem"><button id="btnUninstall" type="button" onclick="uninstall('fancygotchi')">Uninstall fancygotchi</button></li>
                     <li class="navitem"><button id="btnUpdate" type="button" onclick="check_update('fancygotchi')">Check fancygotchi update</button></li>
                     <li class="navitem"><input type="checkbox" id="upd_on" /><label for="upd_on"  id="upd">Online update</label></li>
                 </ul>
@@ -185,9 +185,9 @@
 
         }
 
-        function uninstall(){
+        function uninstall(name){
             if (confirm("Do you want uninstall Fancygotchi?")){
-                var json = {"response":"1"};
+                var json = {"name": name};
                 sendJSON("fancytools/uninstall", json, function(response) {
                     if (response) {
                         if (response.status == "200") {

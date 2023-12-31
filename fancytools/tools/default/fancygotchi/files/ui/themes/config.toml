@@ -15,6 +15,7 @@ pwnagotchi = [
 'ui/web/handler.py',
 'ui/web/templates/base.html',
 'ui/web/templates/fancygotchi.html',
+'ui/web/static/css/style.css',
 'identity.py',
 'ui/themes/240x240/config-h.toml',
 'ui/themes/240x240/config-v.toml',
