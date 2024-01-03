@@ -3,9 +3,14 @@ name = 'fancygotchi'
 __version__ = '2023.09.1'
 # File where the __version__ 
 online_path = 'https://raw.githubusercontent.com/V0r-T3x/pwnagotchi-fancygotchi/master/pwnagotchi/ui/fancygotchi.py'
-subprocess = ''
+# The main subprocess need for the tool, it is used to verify if the tool is installed
+subprocess = []
+
+[services]
 
 [files]
+# All files needed for the tools, and stored with the same path inside the files folder
+# The relatives path for the pwnagotchi folder:
 pwnagotchi = [
 'ui/components.py',
 'ui/state.py',
@@ -46,10 +51,17 @@ pwnagotchi = [
 'ui/themes/320x240/config-h.toml',
 'ui/themes/320x240/config-v.toml',
 ]
+# The absolute path for the system files:
 system = [
 '/usr/share/fonts/truetype/font-awesome-solid.otf',
 ]
 
 [commands]
-install = []
+# Each commands are formated with eval(cmd)
+# and are executed with os.system(formated_cmd)
+install = [
+    "'ls %s' % (ROOT_PATH)",
+    "f'ls {ROOT_PATH}'",
+    "'ls /usr'",
+]
 uninstall = []

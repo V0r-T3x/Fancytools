@@ -1,22 +1,20 @@
 #!/usr/bin/python3
 
 import argparse
-import sys
 import os
 from multiprocessing.connection import Client
 
 def main():
     parser = argparse.ArgumentParser(description="Fancytools")
 
-    # Add an argument similar to the one in your provided code
-    parser.add_argument('-d', '--diagnostic', action='store_true', dest='diagnostic',
-                        help='A full anonymised system report will be prompt.')
-    parser.add_argument('-p', '--plugin', dest='plugin', required=True, help='Name of the plugin to toggle')
+    parser.add_argument('-d', '--diagnostic', nargs='*', dest='diagnostic_args',
+                        help='A full anonymized system report will be prompted. Additional arguments are accepted.')
+    parser.add_argument('-p', '--plugin', dest='plugin', help='Name of the plugin to toggle')
     parser.add_argument('-e', '--enable', action='store_true', dest='enable',
                         help='Enable the specified plugin (default is to disable)')
     args = parser.parse_args()
 
-    if args.diagnostic:
+    if args.diagnostic_args is not None:
         script_path = os.path.abspath(__file__)
 
         print(f"The path of the running script is: {script_path}")
@@ -37,10 +35,10 @@ def main():
 
         print(f"The transformed path is: {new_path}")
 
-        os.system('/'+ new_path)
+        os.system('/' + new_path)
 
     if args.plugin:
-        if args.enable: 
+        if args.enable:
             enable_state = 'True'
         else:
             enable_state = 'False'
@@ -52,9 +50,8 @@ def main():
                 conn = Client(address)
                 conn.send(['plugin', args.plugin, enable_state])
                 conn.close()
-                print('success ' + args.plugin + '.enable='+enable_state)
+                print(f'Success {args.plugin}.enable={enable_state}')
                 break  # Exit the loop if the connection and data sending are successful
-
 
             except ConnectionRefusedError as cre:
                 print(f"Connection refused error: {cre}")

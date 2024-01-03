@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% set active_page = "plugins" %}
 {% block title %}
-    Fancytools
+    {{ title }}
 {% endblock %}
 
 {% block meta %}
@@ -96,58 +96,65 @@
 {% block content %}
 <div id="editor">
     <div id="wrap_cmd" data-role="tabs">
+
+            
+
         <div id="cmd_tabs" data-role="navbar">
             <ul>
-                <li><a href="#fancygotchi" data-theme="a" data-ajax="false" class="ui-btn-active">Fancygotchi</a></li>
-                <li><a href="#debug" data-theme="a" data-ajax="false">Debug tools</a></li>
-                <li><a href="#webssh" data-theme="a" data-ajax="false">WebSSH</a></li>
+                {% for tool_name, tool_data in deftools.items() %}
+                    <li{% if loop.first %} class="ui-btn-active"{% endif %}><a href="#{{ tool_data['info']['name'] }}" data-theme="a" data-ajax="false">{{ tool_data['info']['name'].capitalize() }}</a></li>
+                {% endfor %}
             </ul>
         </div>
-        <div id="fancygotchi" class="ui-content">
-            <h1>Fancygotchi tools:</h1>
+                
+        {% for tool_name, tool_data in deftools.items() %}
+        <div id="{{ tool_name }}" class="ui-content">
+            <h1>{{ tool_name.capitalize() }} tools:</h1>
             <div id="divTop" data-role="navbar" data-iconpos="left">
                 <ul>
-                    <li class="navitem"><button id="btnInstall" type="button" onclick="install('fancygotchi')">Install fancygotchi</button></li>
-                    <li class="navitem"><button id="btnUninstall" type="button" onclick="uninstall('fancygotchi')">Uninstall fancygotchi</button></li>
-                    <li class="navitem"><button id="btnUpdate" type="button" onclick="check_update('fancygotchi')">Check fancygotchi update</button></li>
-                    <li class="navitem"><input type="checkbox" id="upd_on" /><label for="upd_on"  id="upd">Online update</label></li>
+                    {% if tool_data['info']['is_installed'] %}
+                        {% if tool_data['info']['is_embedded'] %}
+                            <!-- No button for embedded and installed tool -->
+                            <li class="navitem"><p>Tool is embedded</p></li>
+                        {% else %}
+                            <!-- Display uninstall and update buttons for installed tool -->
+                            <li class="navitem"><button id="btnUninstall" type="button" onclick="uninstall('{{ tool_name }}')">Uninstall {{ tool_name }}</button></li>
+                            <li class="navitem"><button id="btnUpdate" type="button" onclick="check_update('{{ tool_data['info']['name'] }}')">Check {{ tool_name }} update</button></li>
+                            <li class="navitem"><input type="checkbox" id="upd_on_{{ tool_data['info']['name'] }}" /><label for="upd_on_{{ tool_data['info']['name'] }}"  id="upd">Online update</label></li>
+                        {% endif %}
+                    {% else %}
+                        <!-- Display install button for not installed tool -->
+                        <li class="navitem"><button id="btnInstall" type="button" onclick="install('{{ tool_name }}')">Install {{ tool_name }}</button></li>
+                    {% endif %}
                 </ul>
-            </div></br>
-            <h1>Fancygotchi dev tools:</h1>
-            <div id="divDevTop" data-role="navbar" data-iconpos="left">
                 <ul>
-                    <li class="navitem"><button id="btnDevBackup" type="button" onclick="dev_backup()">dev_backup fancygotchi</button></li>
-                    <li class="navitem"><input id="textDevBackup" type="text" placeholder="Backup folder name..."></input></li>
+                    {% if tool_data['info']['is_run'] == None %}
+                        <li class="navitem"><p>No services</p></li>
+                    {% else %}
+                        {% if tool_data['info']['is_run'] %}
+                            <li class="navitem"><button id="btnSStop" type="button" onclick="srv_stop('{{ tool_name }}')">Stop services</button></li>
+                            <li class="navitem"><p>Service is running</p></li>
+                        {% else %}
+                            <li class="navitem"><button id="btnSStart" type="button" onclick="srv_start('{{ tool_name }}')">Start services</button></li>
+                            <li class="navitem"><p>Service is not running</p></li>
+                        {% endif %}
+                    {% endif %}
+
                 </ul>
+                <div>
+                    {% if tool_data['info']['is_installed'] %}
+                        {{ tool_data['info']['html']|safe }}
+                    {% endif %}
+                </div>
             </div>
+            <br>
         </div>
-        <div id="debug" class="ui-content">
-            <h1>Debug tools</h1>
-            <div id="divTop" data-role="navbar" data-iconpos="left">
-                <ul>
-                    <li class="navitem"><button id="btnLogs" type="button" onclick="getlogs()">Get logs</button></li>
-                    <li class="navitem"><button id="btnSettings" type="button" onclick="getsettings()">Get settings</button></li>
-                </ul>
-            </div>
-        </div>
-        <div id="webssh" class="ui-content">
-            <h1>WebSSH Terminal:</h1>
-            <div id="divTop" data-role="navbar" data-iconpos="left">
-                <ul>
-                    <li class="navitem"><button id="btnWebsshInst" type="button" onclick="WebsshInst()">Install WebSSH</button></li>
-                    <li class="navitem"><button id="btnWebsshStart" type="button" onclick="WebSSHStart()">Start WebSSH</button></li>
-                    <li class="navitem"><button id="btnWebsshStop" type="button" onclick="WebSSHStop()">Stop WebSSH</button></li>
-                </ul>
-            </div>
-            {% if request.remote_addr.startswith('::ffff:10.0.') %}
-                <iframe src="http://10.0.0.2:7681" title="WebSSH" id="webssh" style="width:calc(100vw - 80px); height:calc(100vh - 47px);" ></iframe>
-            {% elif request.remote_addr.startswith('::ffff:192.168.') %}
-                <iframe src="http://192.168.44.44:7681" title="WebSSH" id="webssh" style="width:calc(100vw - 80px); height:calc(100vh - 47px);" ></iframe>
-            {% endif %}
-        </div>
+        {% endfor %}
+
+
+
     </div>
 </div>
-
 {% endblock %}
 
 {% block script %}
@@ -167,15 +174,15 @@
 
         function install(name){
             alert(name);
-            if (confirm("Do you want install Fancygotchi?")){
+            if (confirm("Do you want install "+name+"?")){
                 var json = {"name": name};
                 sendJSON("fancytools/install", json, function(response) {
                     if (response) {
                         if (response.status == "200") {
-                            alert("fancygotchi is installed");
+                            alert(name+" is installed");
                             window.location.href = '/';
                         } else {
-                            alert("Error while installing fancygotchi (err-code: " + response.status + ")");
+                            alert("Error while installing "+name+" (err-code: " + response.status + ")");
                         }
                     }
                 });
@@ -185,16 +192,56 @@
 
         }
 
+        function srv_start(name){
+            alert(name);
+            if (confirm("Do you want start service for "+name+"?")){
+                var json = {"name": name};
+                sendJSON("fancytools/srv_start", json, function(response) {
+                    if (response) {
+                        if (response.status == "200") {
+                            alert(name+" service started");
+                            window.location.href = '/fancytools';
+                        } else {
+                            alert("Error while starting "+name+" service (err-code: " + response.status + ")");
+                        }
+                    }
+                });
+            } else {
+                alert("starting service was canceled");
+            }
+
+        }
+
+        function srv_stop(name){
+            alert(name);
+            if (confirm("Do you want stop service for "+name+"?")){
+                var json = {"name": name};
+                sendJSON("fancytools/srv_stop", json, function(response) {
+                    if (response) {
+                        if (response.status == "200") {
+                            alert(name+" service stoped");
+                            window.location.href = '/fancytools';
+                        } else {
+                            alert("Error while stoping "+name+" service (err-code: " + response.status + ")");
+                        }
+                    }
+                });
+            } else {
+                alert("stoping service was canceled");
+            }
+
+        }
+
         function uninstall(name){
-            if (confirm("Do you want uninstall Fancygotchi?")){
+            if (confirm("Do you want uninstall "+name+"?")){
                 var json = {"name": name};
                 sendJSON("fancytools/uninstall", json, function(response) {
                     if (response) {
                         if (response.status == "200") {
-                            alert("fancygotchi is uninstalled");
+                            alert(name + " is uninstalled");
                             window.location.href = '/';
                         } else {
-                            alert("Error while uninstalling fancygotchi (err-code: " + response.status + ")");
+                            alert("Error while uninstalling "+name+" (err-code: " + response.status + ")");
                         }
                     }
                 });
@@ -203,7 +250,9 @@
             }
         }
         function check_update(name){
-            var online = document.getElementById("upd_on").checked;
+            var on_tag = "upd_on_"+name;
+            alert(on_tag);
+            var online = document.getElementById(on_tag).checked;
             alert(name);
             if (confirm("Do you want check for Fancygotchi update?")){
                 var json = {"name": name, "online": online};

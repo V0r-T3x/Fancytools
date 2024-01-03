@@ -18,6 +18,7 @@ from flask import abort, render_template_string
 import requests
 import subprocess
 import re
+import html
 
 import pwnagotchi.plugins as plugins
 import pwnagotchi.plugins.cmd
@@ -39,6 +40,16 @@ setattr(pwnagotchi, 'fancy_root', FANCY_ROOT)
 with open('%s/fancytools/sys/index.html' % (FANCY_ROOT), 'r') as file:
     html_contents = file.read()
 INDEX = html_contents
+
+def www_check():
+    try:
+        # Use the ping command to check internet connectivity
+        subprocess.run(['ping', '-c', '1', '8.8.8.8'], check=True)
+        print("Pwnagotchi is connected to the internet.")
+        return True
+    except subprocess.CalledProcessError:
+        print("Pwnagotchi is not connected to the internet.")
+        return False
 
 def load_config(file_path):
     try:
@@ -93,8 +104,8 @@ def copy_with_backup(src_path, dest_path):
         while os.path.exists(backup_path):
             backup_path = f"{dest_path}.original_{index}"
             index += 1
-            logging.warning(backup_path)
-        logging.warning(backup_path)
+            logging.debug(backup_path)
+        logging.debug(backup_path)
         # If no .original file found, create a backup with .original extension
         shutil.copy(dest_path, backup_path)
 
@@ -112,62 +123,75 @@ def delete_restore(dest_path):
     # If a backup file exists, copy it back to the destination
     if os.path.exists(backup_path):
         shutil.copy(backup_path, dest_path)
-        logging.warning(f"Restored '{dest_path}' from backup.")
+        logging.debug(f"Restored '{dest_path}' from backup.")
         
         # Optionally, you can remove the backup file after restoring
         os.remove(backup_path)
-        logging.warning(f"Removed backup file '{backup_path}'.")
+        logging.debug(f"Removed backup file '{backup_path}'.")
+    else:
+        os.remove(dest_path)
+    # Recursively check and delete empty parent folders
+        folder_path = os.path.dirname(dest_path)
+        while not os.listdir(folder_path):
+            os.rmdir(folder_path)
+            logging.debug(f"Removed empty folder '{folder_path}'.")
+            folder_path = os.path.dirname(folder_path)
 
 
 # function to backup all actual modified files to make a new install update
 def dev_backup(config, dest_fold):
     if not config.get('pwnagotchi') and not config.get('system'):
-        logging.warning('empty config files for dev backup')
+        logging.debug('empty config files for dev backup')
     else:
         if config.get('pwnagotchi'):  
             for path in config['pwnagotchi']:
                 target_path = ROOT_PATH + '/' + path
                 back_path = '%s/%s' % (dest_fold, path)
-                logging.warning(target_path + " >> " + back_path)
+                logging.debug(target_path + " >> " + back_path)
                 copy_with_backup(target_path, back_path)
 
         if config.get('system'):
             for path in config['system']:
                 target_path = path
                 back_path = '%s%s' % (dest_fold, path)
-                logging.warning(target_path + " >> " + back_path)
+                logging.debug(target_path + " >> " + back_path)
                 copy_with_backup(target_path, back_path)
 
 
 def install(config):
+    logging.debug('hello worlds')
     if config['info']['default']: tooltype = 'default'
     else: tooltype = 'custom'
     name = config['info']['name']
 
     logging.info('[FANCYTOOLS] starting '+ config['info']['name'] +' install')
     if not config['files'].get('pwnagotchi') and not config['files'].get('system'):
-        logging.warning('No install files')
+        logging.debug('No install files')
     else:
         if config['files'].get('pwnagotchi'):
             for path in config['files']['pwnagotchi']:
                 target_path = '%s/fancytools/tools/%s/%s/files/%s' % (FANCY_ROOT, tooltype, name, path)
                 sys_path = '%s/%s' % (ROOT_PATH, path)
-                logging.warning(target_path + " >> " + sys_path)
+                logging.debug(target_path + " >> " + sys_path)
                 copy_with_backup(target_path, sys_path)
 
         if config['files'].get('system'):
             for path in config['files']['system']:
                 target_path = '%s/fancytools/tools/%s/%s/files%s' % (FANCY_ROOT, tooltype, name, path)
                 sys_path = path
-                logging.warning(target_path + " >> " + sys_path)
+                logging.debug(target_path + " >> " + sys_path)
                 copy_with_backup(target_path, sys_path)
 
     if not config['commands'].get('install'):
-        logging.warning('no install commands')
+        logging.debug('no install commands')
     else:
         for cmd in config['commands']['install']:
-            logging.warning(cmd)
-            os.system(cmd)
+            logging.debug(cmd)
+            formatted_cmd = eval(cmd)
+            logging.debug(formatted_cmd)
+            response = os.system(formatted_cmd)
+            logging.debug(response)
+
 
 
 def uninstall(config):
@@ -175,34 +199,40 @@ def uninstall(config):
     else: tooltype = 'custom'
     name = config['info']['name']
     if name == 'fancygotchi': 
-        logging.warning('rm %s/%s' % (ROOT_PATH, 'ui/web/static/img'))
+        logging.debug('rm %s/%s' % (ROOT_PATH, 'ui/web/static/img'))
         os.system('rm %s/%s' % (ROOT_PATH, 'ui/web/static/img'))
-        logging.warning('load config: %s/%s' % (ROOT_PATH, 'ui/theme/config.toml'))
+        logging.debug('load config: %s/%s' % (ROOT_PATH, 'ui/theme/config.toml'))
         config = load_config('%s/%s' % (ROOT_PATH, 'ui/themes/config.toml'))
 
     logging.info('[FANCYTOOLS] starting '+ config['info']['name'] +' install')
 
     logging.info('uninstall function start')
     if not config['commands'].get('uninstall'):
-        logging.warning('no uninstall commands')
+        logging.debug('no uninstall commands')
     else:
         for cmd in config['commands']['uninstall']:
-            logging.warning(cmd)
-            os.system(cmd)
+            logging.debug(cmd)
+            formatted_cmd = eval(cmd)
+            logging.debug(formatted_cmd)
+            response = os.system(formatted_cmd)
+            logging.debug(response)
+
     if not config['files'].get('pwnagotchi') and not config['files'].get('system'):
-        logging.warning('No install files')
+        logging.debug('No install files')
     else:
         if config['files'].get('pwnagotchi'):
             for path in config['files']['pwnagotchi']:
                 sys_path = '%s/%s' % (ROOT_PATH, path)
-                logging.warning("delete: " + sys_path)
+                logging.debug("delete: " + sys_path)
                 delete_restore(sys_path)
 
         if config['files'].get('system'):
             for path in config['files']['system']:
                 sys_path = path
-                logging.warning("Delete: " + sys_path)
+                logging.debug("Delete: " + sys_path)
                 delete_restore(sys_path)
+    #if name == 'fancygotchi':
+    #    os.system(f'rm -R {ROOT_PATH}/ui/themes')
 
 def check_update(vers, path, online):
     nofile = False
@@ -210,15 +240,15 @@ def check_update(vers, path, online):
     cversion = ''
     compared_version = ''
     if online:
-        logging.warning('online check update')
+        logging.debug('online check update')
         response = requests.get(path)
         if response.status_code == 200:
             lines = str(response.content)
         else:
-            logging.warning(f"Failed to retrieve the file. Status code: {response.status_code}")
+            logging.debug(f"Failed to retrieve the file. Status code: {response.status_code}")
             nofile = True
     else:
-        logging.warning('local check update')
+        logging.debug('local check update')
         if os.path.exists(path):
             with open(path, 'r') as file:
                 lines = file.read()
@@ -226,19 +256,19 @@ def check_update(vers, path, online):
             nofile = True
     if not nofile:
         compared_version = re.search(r"(\d+\.\d+\.\d+)", lines)
-        logging.warning('starting version comparaison')
+        logging.debug('starting version comparaison')
         cversion = compared_version.groups(1)[0]
         com_v = cversion.split('.')
         local_v = vers.split('.')
-        logging.warning(str(local_v) + " >> " + str(com_v))
+        logging.debug(str(local_v) + " >> " + str(com_v))
         upd = False
         if local_v == com_v:
-            logging.warning('same version')
+            logging.debug('same version')
         elif local_v < com_v:
-            logging.warning('compared version is newer')
+            logging.debug('compared version is newer')
             upd = True
         elif local_v > com_v:
-            logging.warning('local version is newer')
+            logging.debug('local version is newer')
 
     return [upd, cversion]
 
@@ -318,13 +348,100 @@ def verify_config_files(config, ext=''):
     return missing, total_files
 
 def verify_subprocess(subp):
+    missing = []
     is_installed = 0
-    try:
-        subprocess.check_output(['which', subp])
+
+    for command in subp:
+        try:
+            subprocess.check_output(['which', command])
+        except subprocess.CalledProcessError:
+            logging.debug('[FANCYTOOLS] ' + command + ' is not installed')
+            missing.append(command)
+    if missing:
+        is_installed = 0
+    else:
         is_installed = 1
-    except subprocess.CalledProcessError:
-        logging.debug('[FANCYTOOLS] '+ subp+' is not installed')
-    return is_installed
+
+    return is_installed, missing
+
+def verify_services(services_dict):
+    missing_services = []
+    is_installed = 1  # Assume all services are installed by default
+
+    for services_list in services_dict:
+        services = services_dict[services_list]
+        for service in services:
+            logging.debug(str(service['name']))
+            name = str(service['name'])
+
+            # Search for service files recursively in /etc/systemd/system
+            #service_files = find_service_files('/etc/systemd/system')
+            service_files = []
+            for root, dirs, files in os.walk('/etc/systemd/system'):
+                for file in files:
+                    if file.endswith('.service'):
+                        service_files.append(os.path.join(root, file))
+
+            # Check if the service file exists
+            if not any(name in service_file for service_file in service_files):
+                is_installed = 0
+
+            if not is_installed:
+                is_installed = 1
+                initd_service_file = f"/etc/init.d/{name}"
+                if not os.path.exists(initd_service_file):
+                    is_installed = 0
+            if not is_installed:
+                logging.debug(f"Service file for {name} not found in /etc/init.d or /etc/systemd/system.")
+                missing_services.append(name)
+    logging.debug(is_installed)
+    return is_installed, missing_services
+
+def is_service_running(services):
+    logging.debug(services)
+
+    # Check if services is empty
+    if not services:
+        logging.debug('No services provided')
+        return None
+
+    for service, details in services.items():
+        for service_info in details:
+            service_name = service_info['name']
+            try:
+                # Check if the service is running using subprocess
+                subprocess.check_output(['pgrep', service_name], stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError:
+                # If an error occurs (process not found), return False
+                logging.debug('False')
+                return False
+    # If all services are running, return True
+    logging.debug('True')
+    return True
+
+def srv_start(services):
+    for service, details in services.items():
+        for service_info in details:
+            service_name = service_info['name']
+            try:
+                # Start the service using subprocess
+                subprocess.run(['service', service_name, 'start'], check=True)
+                logging.debug(f"Service {service_name} started successfully.")
+            except subprocess.CalledProcessError as e:
+                logging.debug(f"Error starting service {service_name}: {e}")
+                # You can choose to handle the error as needed
+
+def srv_stop(services):
+    for service, details in services.items():
+        for service_info in details:
+            service_name = service_info['name']
+            try:
+                # Start the service using subprocess
+                subprocess.run(['service', service_name, 'stop'], check=True)
+                logging.debug(f"Service {service_name} started successfully.")
+            except subprocess.CalledProcessError as e:
+                logging.debug(f"Error starting service {service_name}: {e}")
+                # You can choose to handle the error as needed
 
 def verify_fancygotchi_status(config):
     logging.debug(config['fancygotchi']['info']['__version__'])
@@ -336,54 +453,66 @@ def verify_fancygotchi_status(config):
     fancy_status = 0
 
     if len(missing_files) == total_files:
-        logging.debug('Fancygotchi is not installed')
+        logging.info('[FANCYTOOLS] Fancygotchi is not installed')
         fancy_status = 0
     elif len(missing_files) == 0 and len(missing_backup) == total_files:
-        logging.debug('Fancygotchi is installed and is embedded')
+        logging.info('[FANCYTOOLS] Fancygotchi is installed and is embedded')
         fancy_status = 1
     elif len(missing_files) == 0 and len(missing_backup) != total_files:
-        logging.debug('Fancygotchi is installed manually')
+        logging.info('[FANCYTOOLS] Fancygotchi is installed manually')
         fancy_status = 2
-    #logging.warning(str(fancy_status))
+    #logging.debug(str(fancy_status))
     return fancy_status
 
 def verify_tool_status(config):
-    missing, total = verify_config_files(config['files'])
-    logging.debug(str(len(missing))+'/'+str(total))
+    files = config['files']
     subp = config['info']['subprocess']
+    services = config['services']
+    is_installed = 1
+    is_embed = False
+    missing_subp = []
+    missing_serv = []
+    missing_files = []
+
+    missing_files, total = verify_config_files(files)
+    logging.debug('[FANCYTOOLS] missing files: '+str(len(missing_files))+'/'+str(total))
+
     if subp:
-        logging.debug('verify if '+subp+' subprocess is installed')
-        subp_status = verify_subprocess(subp)
+        #logging.debug('verify if '+subp+' subprocess is installed')
+        subp_status, missing_subp = verify_subprocess(subp)
     else:
         logging.debug('no subprocess')
         subp_status = 2
 
-    if total == 0 and subp_status == 2:
-        logging.debug('this tool don\'t need to be installed')
-        is_installed = 1
+    if services:
+        serv_status, missing_serv = verify_services(services)
     else:
-        if total == 0:
-            logging.debug('no files needed for the tool')
-            if subp_status == 0:
-                logging.debug('no subprocess installed')
-            elif subp_status == 1:
-                logging.debug(subp+' subprocess is installed')
-                is_installed = 1
-        else:
-            logging.debug('files needed for the tool')
-            if len(missing) == 0 and subp_status == 1:
-                logging.debug('all files are install')
-                logging.debug(subp+' subprocess is installed')
-                is_installed = 1
-            elif len(missing) == 0 and subp_status == 0:
-                logging.debug('all files are install')
-                logging.debug('no subprocess is installed')
-                is_installed = 0
-            elif len(missing) != 0 and subp_status == 1:
-                logging.debug('not all files are installed')
-                logging.debug(subp+' subprocess is installed')
-                is_installed = 0
-    return is_installed
+        logging.debug('no services')
+        serv_status = 2
+
+    if total == 0 and subp_status == 2 and serv_status == 2:
+        logging.debug('This tool doesn\'t need to be installed')
+        is_embed = True
+    else:
+        if missing_files:
+            logging.debug('Missing files:')
+            for mfile in missing_files:
+                logging.debug(mfile)
+            is_installed = 0
+
+        if missing_subp:
+            logging.debug('Missing subprocesses:')
+            for subpr in missing_subp:
+                logging.debug(subpr)
+            is_installed = 0
+
+        if missing_serv:
+            logging.debug('Missing services:')
+            for serv in missing_serv:
+                logging.debug(serv)
+            is_installed = 0
+
+    return is_installed, is_embed
 
 class Fancytools(plugins.Plugin):
     __name__ = 'FancyTools'
@@ -398,15 +527,15 @@ class Fancytools(plugins.Plugin):
         self.mode = 'MANU'
 
     def toggle_plugin(name, enable=True):
-        logging.warning(toggle_plugin(name, enable))
+        logging.debug(toggle_plugin(name, enable))
 
     def tooltype(self, name):
         tooltype = ''
         if name in self.deftools: 
-            logging.warning('default tool')
+            logging.debug('default tool')
             tooltype = 'default'
         if name in self.custools: 
-            logging.warning('custom tool')
+            logging.debug('custom tool')
             tooltype = 'custom'
         return tooltype
 
@@ -441,31 +570,50 @@ class Fancytools(plugins.Plugin):
         logging.info('[FANCYTOOLS]'+'='*20)
         for tool in self.deftools:
             logging.info('[FANCYTOOLS] ' + tool+' tool')
+            self.deftools[tool]['info']['is_embedded'] = False
+            #logging.debug(f'{deftool_path}{tool}/frontend.html')
+            file_path = os.path.join(FANCY_ROOT, 'fancytools', 'tools', 'default', tool, 'frontend.html')
+            self.deftools[tool]['info']['html'] = ''
+            if os.path.exists(file_path):
+                with open(file_path, 'r') as file:
+                    html_contents = file.read()
+                self.deftools[tool]['info']['html'] = html_contents
+            else:
+                # Handle the case when the file does not exist
+                print(f"Error: File '{file_path}' does not exist.")
+
             is_installed = 0
             self.deftools[tool]['info']['default'] = True
             if tool == 'fancygotchi':
                 status = verify_fancygotchi_status(self.deftools)
+                if status == 1: self.deftools[tool]['info']['is_embedded'] = True
                 if status == 1 or status == 2:
                     is_installed = 1
+                    self.deftools[tool]['info']['is_installed'] = True
                 else:
                     is_installed = 0
             else:
-                is_installed = verify_tool_status(self.deftools[tool])
-            logging.debug(is_installed)
+                is_installed, is_embed = verify_tool_status(self.deftools[tool])
+                self.deftools[tool]['info']['is_embedded'] = is_embed
+
             # adding the is_installed to the deftools[tool]['info']['installed']
             if is_installed == 0:
                 logging.info('[FANCYTOOLS] tool need install')
             else:
                 logging.info('[FANCYTOOLS] tool don\'t need install')
-            self.deftools[tool]['info']['installed'] = is_installed
-            logging.debug(tool + ' : ' + str(self.deftools[tool]['info']['installed']))
+            self.deftools[tool]['info']['is_installed'] = is_installed
+            logging.debug(tool + ' : ' + str(self.deftools[tool]['services']))
             logging.info('[FANCYTOOLS]'+'='*20)
 
         logging.info('[FANCYTOOLS] Custom tools')
         logging.info('[FANCYTOOLS]'+'='*20)
         for tool in self.custools:
+            with open('%s/fancytools/tools/default/%s/frontend.html' % (FANCY_ROOT, tool), 'r') as file:
+                html_contents = file.read()
+            self.deftools[tool]['info']['html'] = html_contents
             logging.info('[FANCYTOOLS] ' + tool+' tool')
-            is_installed = verify_tool_status(self.custools[tool])
+            is_installed, is_embed = verify_tool_status(self.custools[tool])
+            self.deftools[tool]['info']['is_embedded'] = is_embed
             self.deftools[tool]['info']['default'] = False
             logging.debug(is_installed)
             # adding the is_installed to the deftools[tool]['info']['installed']
@@ -473,8 +621,8 @@ class Fancytools(plugins.Plugin):
                 logging.info('[FANCYTOOLS] tool need install')
             else:
                 logging.info('[FANCYTOOLS] tool don\'t need install')
-            self.deftools[tool]['info']['installed'] = is_installed
-            logging.debug(tool + ' : ' + str(self.custools[tool]['info']['installed']))
+            self.deftools[tool]['info']['is_installed'] = is_installed
+            logging.debug(tool + ' : ' + str(self.custools[tool]['info']['is_installed']))
             logging.info('[FANCYTOOLS]'+'='*20)
 
             # linking the local path deftools[tool]['info']['local_path']
@@ -483,7 +631,7 @@ class Fancytools(plugins.Plugin):
 
     def on_unload(self, ui):
         os.system('rm /usr/local/bin/fancytools')
-        #logging.warning('rm /usr/local/bin/fancytools')
+        #logging.debug('rm /usr/local/bin/fancytools')
         logging.info("[FANCYTOOLS] Fancytools unloaded")
 
     def on_webhook(self, path, request):
@@ -491,13 +639,49 @@ class Fancytools(plugins.Plugin):
         if not self.ready:
             return "Plugin not ready"
 
+        deftoold = self.deftools
+        is_run = {}
+        for tool in deftoold:
+            content = deftoold[tool]['info']['html']
+            
+            content_result = render_template_string(content, deftools=self.deftools[tool])
+            logging.debug(content_result)
+            deftoold[tool]['info']['html'] =  content_result
+            srvs = deftoold[tool]['services']
+            logging.debug(srvs)
+            is_run =  is_service_running(srvs)
+            logging.debug(is_run)
+            deftoold[tool]['info']['is_run'] = is_run
+
+
         if request.method == "GET":
             if path == "/" or not path:
                 #pwnagotchi.fancy_change = True
-                return render_template_string(INDEX)
+                '''
+                tools info and process needed:
+                -----------------------------
+                is it installed?
+                if installed
+                    uninstall button
+                    check_update button
+                if installed and embedded
+                    no button
+                if not installed
+                    install button
+                
+                if services
+                    on or off service button
+
+                
+                '''
+                title = os.path.basename(__file__)[:-3]
+                logging.debug(title)
+                
+                logging.debug(self.deftools)
+                return render_template_string(INDEX, title=title, deftools=deftoold)
 
         elif request.method == "POST":
-            logging.warning('WebUI subpath: '+path)
+            logging.debug('WebUI subpath: '+path)
             if path == "devbackup":
                 try:
                     jreq = request.get_json()
@@ -520,10 +704,46 @@ class Fancytools(plugins.Plugin):
                     jreq = request.get_json()
                     data = json.loads(json.dumps(jreq))
                     name = data["name"]
-                    logging.warning(name)
+                    logging.debug(name)
                     alltools = {**self.deftools, **self.custools}
-                    install(alltools[name])
+                    logging.debug(alltools[name])
+                    install_dict = alltools[name]
+                    install(install_dict)
                     _thread.start_new_thread(restart, (self.mode,))
+                    #logging.info(str(request.get_json()))
+                    return "success"
+                except Exception as ex:
+                    logging.error(ex)
+                    return "install error", 500
+
+            elif path == "srv_start":
+                try:
+                    jreq = request.get_json()
+                    data = json.loads(json.dumps(jreq))
+                    name = data["name"]
+                    logging.debug(name)
+                    alltools = {**self.deftools, **self.custools}
+                    logging.debug(alltools[name])
+                    srv_dict = alltools[name]['services']
+                    srv_start(srv_dict)
+                    #_thread.start_new_thread(restart, (self.mode,))
+                    #logging.info(str(request.get_json()))
+                    return "success"
+                except Exception as ex:
+                    logging.error(ex)
+                    return "install error", 500
+
+            elif path == "srv_stop":
+                try:
+                    jreq = request.get_json()
+                    data = json.loads(json.dumps(jreq))
+                    name = data["name"]
+                    logging.debug(name)
+                    alltools = {**self.deftools, **self.custools}
+                    logging.debug(alltools[name])
+                    srv_dict = alltools[name]['services']
+                    srv_stop(srv_dict)
+                    #_thread.start_new_thread(restart, (self.mode,))
                     #logging.info(str(request.get_json()))
                     return "success"
                 except Exception as ex:
@@ -535,9 +755,9 @@ class Fancytools(plugins.Plugin):
                     jreq = request.get_json()
                     data = json.loads(json.dumps(jreq))
                     name = data["name"]
-                    logging.warning(name)
+                    logging.debug(name)
                     alltools = {**self.deftools, **self.custools}
-                    logging.warning('before uninstall')
+                    logging.debug('before uninstall')
                     uninstall(alltools[name])
                     _thread.start_new_thread(restart, (self.mode,))
                     #logging.info(str(request.get_json()))
@@ -559,10 +779,10 @@ class Fancytools(plugins.Plugin):
                     else:
                         ckpath = '%s/fancytools/tools/update/%s/config.toml' % (FANCY_ROOT, name)
                     if not ckpath:
-                        logging.warning('no tool with this name')
+                        logging.debug('no tool with this name')
                         return
                     else:
-                        logging.warning(ckpath)
+                        logging.debug(ckpath)
                     is_update = check_update(installed_version, ckpath, data['online'])
                     upd = '%s,%s' % (is_update[0], is_update[1])
                     return upd

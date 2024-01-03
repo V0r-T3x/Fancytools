@@ -3,7 +3,9 @@ name = 'dev'
 description = ''
 version = ''
 online_path = ''
-subprocess = ''
+subprocess = []
+
+[services]
 
 [files]
 pwnagotchi = []
