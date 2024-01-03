@@ -6,6 +6,13 @@
 
 ## Installation
 
+- The options in the config.toml should look like this for Fancygotchi (I will add a code to integrate it on fancygotchi install):
+```
+fancygotchi.theme = "pwnachu"
+fancygotchi.rotation = 0
+```
+
+
 ## Features
 
 ### Fancygotchi Integration
