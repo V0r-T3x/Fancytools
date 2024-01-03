@@ -1,5 +1,5 @@
 
-# ! WIP the plugin is not actually available !
+# ! WIP the plugin is actually available for testing !
 # Fancytools - Official Installer for Fancygotchi 
 
 [Fancygotchi](https://github.com/Pwnagotchi-Unofficial/pwnagotchi-fancygotchi) is now an integral part of the Pwnagotchi, and Fancytools serves as its official installer. This plugin enhances the installation experience for Fancygotchi and introduces additional developer/debug tools along with a streamlined process to install various useful utilities.
