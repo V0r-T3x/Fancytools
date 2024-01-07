@@ -200,7 +200,7 @@
                     if (response) {
                         if (response.status == "200") {
                             alert(name+" service started");
-                            window.location.href = '/fancytools';
+                            window.location.href = '/plugins/fancytools';
                         } else {
                             alert("Error while starting "+name+" service (err-code: " + response.status + ")");
                         }
@@ -220,7 +220,7 @@
                     if (response) {
                         if (response.status == "200") {
                             alert(name+" service stoped");
-                            window.location.href = '/fancytools';
+                            window.location.href = '/plugins/fancytools';
                         } else {
                             alert("Error while stoping "+name+" service (err-code: " + response.status + ")");
                         }
