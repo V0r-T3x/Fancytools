@@ -489,6 +489,8 @@ class View(object):
                     if th_opt['bg_anim_image'] !='':
                         #logging.warning(str(self._i) +'/'+str(len(self._frames)))
                         #logging.warning(th_opt['anim_web'])
+                        if self._fancygotchi._i > len(self._fancygotchi._frames):
+                            self._fancygotchi._i = 0
                         if th_opt['anim_web']:
                             if isinstance(iweb, Image.Image):
                                 temp_iweb = iweb.copy()
