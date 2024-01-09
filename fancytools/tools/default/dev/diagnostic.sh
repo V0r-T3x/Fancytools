@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Output file
-output_file="system_info.txt"
+# Get the script's directory
+script_dir=$(dirname "$(readlink -f "$0")")
+
+# Output file in the script's directory
+output_file="$script_dir/system_info.txt"
 
 # Pwnagotchi version
 echo "Pwnagotchi version:" > "$output_file"
@@ -49,17 +52,17 @@ echo "List enabled plugins:" >> "$output_file"
 cat /etc/pwnagotchi/config.toml | grep plugin | grep enabled | grep true >> "$output_file"
 echo >> "$output_file"
 
-echo "Information saved to $output_file"
-
 # Log file
 log_file="/var/log/pwnagotchi.log"
 
 # Config file
 config_file="/etc/pwnagotchi/config.toml"
 
-# Output files
-log_output_file="anonymized_log.txt"
-config_output_file="anonymized_config.toml"
+# Output files in the script's directory
+log_output_file="$script_dir/anonymized_log.txt"
+config_output_file="$script_dir/anonymized_config.toml"
+
+
 
 # Anonymize and export the last 100 lines of the log file to a file
 echo "Anonymized log (last 100 lines):"
@@ -68,15 +71,10 @@ tail -n 100 "$log_file" | sed -E -e 's/([0-9]{1,3}\.){3}[0-9]{1,3}/XX.XX.XX.XX/g
 # Anonymize and export the config file to a file
 echo -e "\nAnonymized config file:"
 sed -E -e 's/([0-9]{1,3}\.){3}[0-9]{1,3}/XX.XX.XX.XX/g' -e 's/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/XX:XX:XX:XX:XX:XX/g' -e '/api_key/ s/=.*$/= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/' -e '/whitelist/ {s/=.*/= \[\]/; :loop n; /\]/! {s/^[[:space:]]*["'"'"'].*["'"'"'],?//; s/^[[:space:]]*\][[:space:]]*$//; b loop}}' -e '/password/ s/=.*$/= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/' "$config_file" > "$config_output_file"
-
 cat $output_file
 cat $log_output_file
 cat $config_output_file
 
-script_dir=$(dirname "$(readlink -f "$0")")
-
-echo "Basic system info saved to $(pwd)/$output_file"
-echo "Anonymized log saved to $(pwd)/$log_output_file"
-echo "Anonymized config saved to $(pwd)/$config_output_file"
-
-
+echo "Basic system info saved to $output_file"
+echo "Anonymized log saved to $log_output_file"
+echo "Anonymized config saved to $config_output_file"
