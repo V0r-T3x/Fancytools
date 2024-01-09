@@ -86,6 +86,7 @@ class fancygotchi(object):
     def __init__(self, view, res, config):
         #logging.warning('Fancygotchi object loaded')
         self._view = view
+        self._frames = []
         self._i = 0
         self._config = config
         self._res = res
@@ -93,6 +94,7 @@ class fancygotchi(object):
         self._fancy_theme = ''
         self._fancy_theme_disp = ''
         self._fancy_change = True
+        self._bg = None
         self.theme_selector(self._res, self._config, True)
 
     def theme_selector(self, size, config, boot=False):
@@ -102,6 +104,11 @@ class fancygotchi(object):
         display_path = '%s/ui/hw' % (pwny_path)
         #logging.warning(display_path)
         #logging.warning(config['fancygotchi']['theme'])
+        try: 
+            config['fancygotchi']['theme']
+        except:
+            config['fancygotchi'] = {'theme':''}
+
         if not config['fancygotchi']['theme'] == '':
             th_select = str(config['fancygotchi']['theme'])
         else:
@@ -169,14 +176,17 @@ class fancygotchi(object):
                 # loading pwnagotchi config.toml
                 with open('/etc/pwnagotchi/config.toml', 'r') as f:
                     f_toml = toml.load(f)
-                    self._config['fancygotchi']['rotation'] = f_toml['fancygotchi']['rotation']
+                    try:
+                        self._config['fancygotchi']['rotation'] = f_toml['fancygotchi']['rotation']
+                    except:
+                        self._config['fancygotchi']['rotation'] = 0
                 rot = self._config['fancygotchi']['rotation']
                 self.theme_selector(self.size, f_toml)
 
             else:
                 logging.info('[FANCYGOTCHI] partial theme refresh: %s' % (fancy_dict))
-
             bga_path = '%simg/%s' % (pwnagotchi._fancy_theme, th_opt['bg_anim_image'])
+
             if th_opt['bg_anim_image'] != '' and os.path.exists(bga_path):
                 #logging.warning('%simg/%s' % (pwnagotchi._fancy_theme, th_opt['bg_anim_image']))
                 gif = Image.open(bga_path)

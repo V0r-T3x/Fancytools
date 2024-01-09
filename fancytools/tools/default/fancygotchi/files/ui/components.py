@@ -171,7 +171,7 @@ class LabeledValue(Widget):
         pos_value = (pos_label[0] + self.label_spacing + 5 * len(self.label), pos_label[1] - self.label_line_spacing)
         if self.label is None:
             if th_opt['main_text_color'] == '':
-                imgtext = text_to_rgb(self.value, self.label_font, self.color, width, height)
+                imgtext = fancygotchi.text_to_rgb(self.value, self.label_font, self.color, width, height)
                 canvas.paste(imgtext, self.xy)
             else:
                 drawer.text(self.xy, self.value, font=self.label_font, fill=0x00)
@@ -203,7 +203,7 @@ class LabeledValue(Widget):
                         canvas.paste(self.image, pos_label, self.image)
 
                 if th_opt['main_text_color'] == '':
-                    imgtext = text_to_rgb(self.value, self.text_font, self.color, width, height)
+                    imgtext = fancygotchi.text_to_rgb(self.value, self.text_font, self.color, width, height)
                     canvas.paste(imgtext, pos_value)
                 else:
                     drawer.text(pos_value, self.value, font=self.text_font, fill=0x00)

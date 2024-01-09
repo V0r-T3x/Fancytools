@@ -488,6 +488,7 @@ class View(object):
                     # option for animated background
                     if th_opt['bg_anim_image'] !='':
                         #logging.warning(str(self._i) +'/'+str(len(self._frames)))
+                        #logging.warning(th_opt['anim_web'])
                         if th_opt['anim_web']:
                             if isinstance(iweb, Image.Image):
                                 temp_iweb = iweb.copy()
@@ -498,10 +499,12 @@ class View(object):
                         else:
                             if isinstance(iweb, Image.Image):
                                 temp_iweb = iweb.copy()
-                                temp_iweb.paste(self._fancygotchi._frames[0].convert('RGBA'))
+                                if not self._fancygotchi._frames == []:
+                                    temp_iweb.paste(self._fancygotchi._frames[0].convert('RGBA'))
                                 iweb = temp_iweb
                             else: 
-                                iweb = self._fancygotchi._frames[0].convert('RGBA')
+                                if not self._fancygotchi._frames == []:
+                                    iweb = self._fancygotchi._frames[0].convert('RGBA')
                         if th_opt['anim_display']:
                             if isinstance(idisp, Image.Image):
                                 temp_idisp = idisp.copy()
@@ -512,24 +515,28 @@ class View(object):
                         else:
                             if isinstance(idisp, Image.Image):
                                 temp_idisp = idisp.copy()
-                                temp_idisp.paste(self._fancygotchi._frames[0].convert('RGBA'))
+                                if not self._fancygotchi._frames == []:
+                                    temp_idisp.paste(self._fancygotchi._frames[0].convert('RGBA'))
                                 idisp = temp_idisp
                             else: 
                                 idisp = self._fancygotchi._frames[0].convert('RGBA')
                         if self._fancygotchi._i >= len(self._fancygotchi._frames)-1:
                             self._fancygotchi._i = 0
                     
+                    
                     # option for background image
                     if th_opt['bg_image'] !='':
                         if isinstance(iweb, Image.Image):
                             temp_iweb = iweb.copy()
-                            temp_iweb.paste(self._fancygotchi._bg, (0,0), self._fancygotchi._bg)
+                            if not self._fancygotchi._bg == None:
+                                temp_iweb.paste(self._fancygotchi._bg, (0,0), self._fancygotchi._bg)
                             iweb = temp_iweb
                         else: 
                             iweb = self._fancygotchi._bg.copy()
                         if isinstance(idisp, Image.Image): 
                             temp_idisp = idisp.copy()
-                            temp_idisp.paste(self._fancygotchi._bg, (0,0), self._fancygotchi._bg)
+                            if not self._fancygotchi._bg == None:
+                                temp_idisp.paste(self._fancygotchi._bg, (0,0), self._fancygotchi._bg)
                             idisp = temp_idisp
                         else: 
                             idisp = self._fancygotchi._bg.copy()
@@ -643,7 +650,8 @@ class View(object):
 
                 web.update_frame(self._web)
 
-                if hasattr(self, '_frames') and (th_opt['anim_web'] or th_opt['anim_display']):
+                if hasattr(self._fancygotchi, '_frames') and (th_opt['anim_web'] or th_opt['anim_display']):
                     self._fancygotchi._i += 1
+
 
                 self._state.reset()
