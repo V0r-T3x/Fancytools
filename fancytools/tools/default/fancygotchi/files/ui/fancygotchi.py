@@ -86,6 +86,7 @@ class fancygotchi(object):
     def __init__(self, view, res, config):
         #logging.warning('Fancygotchi object loaded')
         self._view = view
+        self._i = 0
         self._frames = []
         self._i = 0
         self._config = config
