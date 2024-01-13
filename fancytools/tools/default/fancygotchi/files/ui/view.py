@@ -399,6 +399,10 @@ class View(object):
 
     def update(self, force=False, new_data={}):
         th_opt = pwnagotchi._theme['theme']['options']
+        try:
+            self._config['fancygotchi']['rotation']
+        except:
+            self._config['fancygotchi']['rotation'] = 0
         rot = self._config['fancygotchi']['rotation']
 
         for key, val in new_data.items():
