@@ -1,5 +1,13 @@
 
 # ! WIP the plugin is actually available for testing !
+### Compatible with:  
+- [Aluminum-ice's image](https://github.com/aluminum-ice/pwnagotchi/releases)
+- [Wpa2 1.5.5FIX image](https://github.com/wpa-2/pwnagotchi/releases)
+- [NurseJackass image](https://github.com/Sniffleupagus/pwnagotchi-snflpgs/releases)(but the tweak_view and display_setting plugins can't be used)
+- [Original image](https://github.com/evilsocket/pwnagotchi/releases)
+### Incompatible with:  
+- [Jayofelony's image](https://github.com/jayofelony/pwnagotchi-bookworm/releases)
+
 # Fancytools - Official Installer for Fancygotchi 
 
 [Fancygotchi](https://github.com/Pwnagotchi-Unofficial/pwnagotchi-fancygotchi) is now an integral part of the Pwnagotchi, and Fancytools serves as its official installer. This plugin enhances the installation experience for Fancygotchi and introduces additional developer/debug tools along with a streamlined process to install various useful utilities.
@@ -9,8 +17,9 @@
 ### General  
 
 - Download the code and paste the fancytools.py, fancyserver.py and the fancytools folder inside your custom plugins folder. (default folder path: `/usr/local/share/pwnagotchi/custom-plugins`)
+- Download the [Fancygotchi Theme]([https://github.com/Pwnagotchi-Unofficial/](https://github.com/V0r-T3x/fancygotchi_themes) you want. Create the theme folder inside the custom plugins folder and place your theme folder inside it. (default themes folder path: `/usr/local/share/pwnagotchi/custom-plugins/themes/`)
 - Restart the pwnagotchi.  
-- Go to the web UI plugin page.
+- Go to the web UI p)lugin page.
 - Click on the enable button and refresh the page.
 - The Fancytools web UI page is now available.
 
