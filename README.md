@@ -17,7 +17,7 @@
 ### General  
 
 - Download the code and paste the fancytools.py, fancyserver.py and the fancytools folder inside your custom plugins folder. (default folder path: `/usr/local/share/pwnagotchi/custom-plugins`)
-- Download the [Fancygotchi Theme]([https://github.com/Pwnagotchi-Unofficial/](https://github.com/V0r-T3x/fancygotchi_themes) you want. Create the theme folder inside the custom plugins folder and place your theme folder inside it. (default themes folder path: `/usr/local/share/pwnagotchi/custom-plugins/themes/`)
+- Download the [Fancygotchi Theme](https://github.com/V0r-T3x/fancygotchi_themes) you want. Create the theme folder inside the custom plugins folder and place your theme folder inside it. (default themes folder path: `/usr/local/share/pwnagotchi/custom-plugins/themes/`)
 - Restart the pwnagotchi.  
 - Go to the web UI plugin page.
 - Click on the enable button and refresh the page.
