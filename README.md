@@ -61,11 +61,6 @@ fancytools -p plugin_name -e to enable
 # To disable a plugin:
 fancytools -p plugin_name
 ```
-[11:45 AM]
-this is my mod of his plugin, to add the command to the plugin:
-
-
-
 - The options in the config.toml should look like this for Fancygotchi (I will add a code to integrate it on fancygotchi install):
 ```
 fancygotchi.theme = "pwnachu"
