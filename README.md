@@ -1,3 +1,5 @@
+# Fancygotchi will be removed from Fancytools soon [Fancygotchi 2.0](https://github.com/V0r-T3x/fancygotchi) is released.
+
 
 # ! WIP the plugin is actually available for testing !
 ### Compatible with:  
